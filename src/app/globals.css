@@ -394,3 +394,249 @@ select option {
     padding-top: 10px;
   }
 }
+
+/* ── manobras ────────────────────────────────────────────────────────────────*/
+.manobras-intro {
+  font-family: 'EB Garamond', serif;
+  font-size: 13px;
+  color: var(--parchment-dark);
+  line-height: 1.5;
+}
+
+.manobras-recursos-snapshot {
+  margin-top: 10px;
+  background: rgba(201,168,76,0.05);
+  border: 1px solid rgba(201,168,76,0.2);
+  border-radius: 6px;
+  padding: 10px 12px;
+}
+.snapshot-label {
+  display: block;
+  font-family: 'Cinzel', serif;
+  font-size: 8px;
+  letter-spacing: 0.25em;
+  color: var(--gold-dark);
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+.snapshot-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+}
+.snapshot-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  background: rgba(0,0,0,0.2);
+  border-radius: 4px;
+  padding: 5px 4px;
+}
+.snapshot-item--wide {
+  grid-column: 1 / -1;
+  flex-direction: row;
+  justify-content: space-between;
+  padding: 5px 10px;
+}
+.snapshot-key {
+  font-family: 'Cinzel', serif;
+  font-size: 8px;
+  color: var(--gold-dark);
+  letter-spacing: 0.05em;
+}
+.snapshot-val {
+  font-family: 'Cinzel', serif;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--gold-light);
+}
+.snapshot-item--wide .snapshot-val {
+  font-size: 13px;
+}
+
+/* ── manobra card ── */
+.manobra-card {
+  background: rgba(201,168,76,0.03);
+  border: 1px solid rgba(201,168,76,0.12);
+  border-radius: 6px;
+  overflow: hidden;
+  transition: border-color 0.2s;
+}
+.manobra-card--open {
+  border-color: rgba(201,168,76,0.3);
+}
+
+.manobra-header {
+  padding: 11px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.manobra-card--open .manobra-header {
+  border-bottom: 1px solid rgba(201,168,76,0.12);
+  background: rgba(201,168,76,0.05);
+}
+
+.manobra-title-row {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 38px;
+}
+.manobra-icon {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 18px;
+  line-height: 1;
+}
+.manobra-nome {
+  font-family: 'Cinzel', serif;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--parchment);
+  letter-spacing: 0.08em;
+  text-align: center;
+}
+.manobra-toggle {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+
+  background: none;
+  border: 1px solid rgba(201,168,76,0.2);
+  border-radius: 3px;
+  color: var(--gold-dark);
+  font-family: 'Cinzel', serif;
+  font-size: 8px;
+  letter-spacing: 0.1em;
+  padding: 3px 7px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: border-color 0.15s, color 0.15s;
+}
+.manobra-toggle:hover {
+  border-color: var(--gold);
+  color: var(--gold);
+}
+
+
+.manobra-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.manobra-column {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.manobra-column-title {
+  font-family: 'Cinzel', serif;
+  font-size: 8px;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--gold-dark);
+
+  margin-bottom: 4px;
+  padding-left: 2px;
+}
+
+.manobra-pill--full {
+  width: 100%;
+}
+
+.manobra-pill {
+  display: inline-flex;
+  align-items: stretch;
+  width: 100%;
+  border-radius: 4px;
+  overflow: hidden;
+  font-family: 'Cinzel', serif;
+  font-size: 9px;
+  letter-spacing: 0.05em;
+}
+
+.pill-label {
+  flex: 1;
+  padding: 4px 8px;
+}
+
+.pill-value {
+  padding: 4px 8px;
+  white-space: nowrap;
+  font-weight: 700;
+}
+
+.manobra-pill--cost .pill-label {
+  background: rgba(139,26,26,0.18);
+  color: var(--parchment-dark);
+  border: 1px solid rgba(139,26,26,0.3);
+  border-right: none;
+  border-radius: 4px 0 0 4px;
+}
+.manobra-pill--cost .pill-value {
+  background: rgba(139,26,26,0.28);
+  color: #e07070;
+  border: 1px solid rgba(139,26,26,0.3);
+  border-radius: 0 4px 4px 0;
+}
+
+.manobra-pill--resource .pill-label {
+  background: rgba(45,106,45,0.15);
+  color: var(--parchment-dark);
+  border: 1px solid rgba(45,106,45,0.28);
+  border-right: none;
+  border-radius: 4px 0 0 4px;
+}
+.manobra-pill--resource .pill-value {
+  background: rgba(45,106,45,0.25);
+  color: #7ec87e;
+  border: 1px solid rgba(45,106,45,0.28);
+  border-radius: 0 4px 4px 0;
+}
+.manobra-pill--empty .pill-value {
+  color: var(--gold-dark);
+}
+
+/* ── collapsible body ── */
+.manobra-body {
+  padding: 12px 14px;
+}
+.manobra-descricao {
+  font-family: 'EB Garamond', serif;
+  font-size: 14px;
+  color: var(--parchment-dark);
+  line-height: 1.6;
+}
+.manobra-extra-note {
+  margin-top: 8px;
+  font-family: 'Cinzel', serif;
+  font-size: 8px;
+  letter-spacing: 0.08em;
+  color: var(--gold-dark);
+  opacity: 0.8;
+  line-height: 1.5;
+}
+
+/* make tab-button border-radius work for 3 tabs */
+.tab-nav .tab-button:not(:first-child):not(:last-child) {
+  border-radius: 0;
+}
+
+@media (max-width: 480px) {
+  .manobra-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .manobra-nome {
+    font-size: 15px;
+  }
+}
