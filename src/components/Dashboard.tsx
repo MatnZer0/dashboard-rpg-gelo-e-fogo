@@ -41,11 +41,27 @@ function SectionHeader({ icon, title }: { icon: string; title: string }) {
   );
 }
 
+const STORAGE_KEY = 'rpg-selected-dominio';
+
 // ── main dashboard ────────────────────────────────────────────────────────────
 export default function Dashboard({ data }: { data: DomainRecord[] }) {
   const nomes = useMemo(() => getUniqueNomes(data), [data]);
-  const [selectedNome, setSelectedNome] = useState<string>(nomes[0]);
+
+  const [selectedNome, setSelectedNome] = useState<string>(() => {
+    // On first render, restore from localStorage if the saved value still exists in the data
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved && nomes.includes(saved)) return saved;
+    }
+    return nomes[0];
+  });
+
   const [selectedTurno, setSelectedTurno] = useState<number | null>(null);
+
+  // Persist the selected domínio whenever it changes
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEY, selectedNome);
+  }, [selectedNome]);
 
   // When domínio changes, auto-select most recent completed turno
   useEffect(() => {
