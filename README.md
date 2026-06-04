@@ -1,39 +1,15 @@
 # Dashboard RPG G&F — Telegram Mini App
 
-A Telegram Mini App built with **Next.js 14** and deployable on **Vercel**.  
-Displays domain administration data (Domínios) for a tabletop RPG campaign.
+A Telegram Mini App built with **Next.js 14** and deployed on **Vercel**.  
+Includes a built-in bot webhook — no separate server needed.
 
 ---
 
 ## ✏️ Updating the Data
 
-**Just replace the CSV file.** That's it.
+Replace `data/dominios.csv` and push. Vercel rebuilds automatically.
 
-The file lives at:
-```
-data/dominios.csv
-```
-
-Edit it in Excel, Google Sheets, LibreOffice, or any text editor — then commit and push.  
-Vercel will automatically rebuild and redeploy with the new data.
-
-**Rules to keep in mind:**
-- Keep the header row exactly as-is (column names must not change)
-- `Turno_Feito` must be either `Sim` or `Não`
-- `Turno` must be a number (0, 1, 2, …)
-- Empty cells are fine — they'll show as `—` in the dashboard
-- You can add new domains (new `Nome` values) or new turns freely
-
----
-
-## Features
-
-- 🗺️ **Domínio dropdown** — lists all domains found in the CSV
-- ⏱️ **Turno dropdown** — shows only turns where `Turno_Feito = "Sim"`, auto-selects the most recent
-- 📊 **Live data panel** — updates when either dropdown changes
-- 📜 **RPG parchment & gold theme** with medieval typography
-- 📱 **Mobile-first** — designed for Telegram's WebView
-- 🔧 **Telegram SDK** — graceful degradation when opened outside Telegram
+**Rules:** keep header names intact, `Turno_Feito` = `Sim` or `Não`, `Turno` = number. Empty cells are fine.
 
 ---
 
@@ -41,75 +17,100 @@ Vercel will automatically rebuild and redeploy with the new data.
 
 ```
 data/
-  dominios.csv          ← ✏️  EDIT THIS FILE to update dashboard data
+  dominios.csv                  ← ✏️ edit this to update dashboard data
 
 src/
   app/
-    layout.tsx          ← Root layout, loads TelegramInit
-    page.tsx            ← Server component: reads CSV → passes to Dashboard
-    globals.css         ← Minimal global reset
+    api/bot/route.ts            ← Telegram webhook (POST) + setup (GET)
+    layout.tsx
+    page.tsx
+    globals.css
   components/
-    Dashboard.tsx       ← Client component: dropdowns + data display
-    TelegramInit.tsx    ← Telegram SDK init (client-only)
+    Dashboard.tsx
+    TelegramInit.tsx
   lib/
-    data.ts             ← Server-only: CSV file reader & parser
-    types.ts            ← Shared types & pure helper functions
+    data.ts                     ← server-only CSV reader
+    types.ts                    ← shared types & helpers
 ```
 
 ---
 
-## Quick Start (Local Dev)
+## Deploy & Bot Setup
+
+### 1. Push to GitHub & deploy on Vercel
 
 ```bash
+git init && git add . && git commit -m "init"
+git remote add origin https://github.com/YOUR/repo.git
+git push -u origin main
+```
+
+Import the repo on [vercel.com](https://vercel.com). Next.js is auto-detected.
+
+### 2. Add environment variables on Vercel
+
+Go to your project → **Settings → Environment Variables** and add:
+
+| Name | Value |
+|------|-------|
+| `BOT_TOKEN` | Your token from @BotFather |
+| `MINI_APP_URL` | `https://your-project.vercel.app` (no trailing slash) |
+| `WEBHOOK_SECRET` | Any random string (generate one below) |
+
+Generate a secret:
+```bash
+node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+```
+
+Redeploy after saving the variables.
+
+### 3. Register the webhook (once)
+
+After deploying, open this URL in your browser once:
+```
+https://your-project.vercel.app/api/bot?secret=YOUR_WEBHOOK_SECRET
+```
+
+You should get `{"ok":true,"result":true,"description":"Webhook was set"}`.  
+Telegram will now send all bot updates to your Vercel app.
+
+### 4. BotFather settings
+
+**Allow the bot to read group messages:**
+> @BotFather → `/mybots` → your bot → **Bot Settings → Group Privacy → Turn off**
+
+**Register commands (shows autocomplete in Telegram):**
+> @BotFather → `/mybots` → your bot → **Edit Bot → Edit Commands** → paste:
+> ```
+> dashboard - Abrir o Dashboard RPG G&F
+> start - Iniciar o bot
+> ```
+
+**Link the Mini App:**
+> @BotFather → `/mybots` → your bot → **Bot Settings → Mini Apps → Main App** → paste your Vercel URL
+
+---
+
+## Local Development
+
+```bash
+cp .env.example .env.local   # fill in your values
 npm install
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000).
-
-> The Telegram SDK logs a warning when running outside Telegram — expected, everything still works.
-
----
-
-## Deploy to Vercel
-
-### 1. Push to GitHub
-
-```bash
-git init
-git add .
-git commit -m "Initial commit"
-git remote add origin https://github.com/YOUR_USERNAME/rpg-dashboard.git
-git push -u origin main
-```
-
-### 2. Connect to Vercel
-
-1. Go to [vercel.com](https://vercel.com) → **Add New → Project**
-2. Import your GitHub repository
-3. Keep all defaults (Next.js is auto-detected)
-4. Click **Deploy**
-
-Your app is live at `https://your-project.vercel.app`
-
-**Every time you push a new `dominios.csv`, Vercel rebuilds automatically.**
+> The webhook route won't receive Telegram updates locally (Telegram can't reach localhost).  
+> Use [ngrok](https://ngrok.com) to expose your local server if you want to test it:
+> ```bash
+> ngrok http 3000
+> # then register the webhook with your ngrok URL
+> ```
 
 ---
 
-## Register as a Telegram Mini App
+## Commands
 
-1. Message **@BotFather** on Telegram
-2. `/newbot` → follow prompts → save your `BOT_TOKEN`
-3. `/newapp` → choose your bot → paste your Vercel URL
-4. Optionally create a direct link: `t.me/your_bot/app`
-
----
-
-## Tech Stack
-
-| Tool | Purpose |
-|------|---------|
-| Next.js 14 (App Router) | Framework |
-| TypeScript | Type safety |
-| `@telegram-apps/sdk-react` | Telegram Mini App SDK |
-| Vercel | Hosting & CI/CD |
+| Command | Works in | What it does |
+|---------|----------|-------------|
+| `/start` | Private chat | Greeting + dashboard button |
+| `/dashboard` | Groups & private chats | Dashboard button |
