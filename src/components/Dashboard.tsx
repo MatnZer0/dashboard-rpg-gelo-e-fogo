@@ -119,14 +119,14 @@ export default function Dashboard({ data }: { data: DomainRecord[] }) {
         </div>
 
         {/* ── Turno Status Badge ── */}
-        {record && (
+        {/* {record && (
           <div className="turno-status">
             <div className={`badge ${isTurnoFeito ? 'badge--done' : 'badge--pending'}`}>
               <span>{isTurnoFeito ? '✦' : '◌'}</span>
               <span>{isTurnoFeito ? 'Turno Concluído' : 'Turno Pendente'}</span>
             </div>
           </div>
-        )}
+        )} */}
 
         {/* ── Content ── */}
         <div className="content">
