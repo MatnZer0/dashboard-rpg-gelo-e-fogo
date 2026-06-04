@@ -22,20 +22,21 @@ function escapeMarkdown(text: string): string {
 }
 
 // web_app buttons only work in private chats.
-// In groups, use a regular URL button that opens the Mini App in the browser.
+// In groups, a t.me/botname/appname link opens the Mini App directly inside Telegram.
 function buildButton(chatType: string) {
-  const url = process.env.MINI_APP_URL!;
+  const miniAppUrl = process.env.MINI_APP_URL!;
+  const telegramAppLink = process.env.TELEGRAM_APP_LINK!; // e.g. https://t.me/geloefogobot/dashboard
   if (chatType === 'private') {
     return {
       inline_keyboard: [[
-        { text: '🏰 Abrir Dashboard', web_app: { url } },
+        { text: '🏰 Abrir Dashboard', web_app: { url: miniAppUrl } },
       ]],
     };
   }
-  // group / supergroup / channel → plain URL button
+  // group / supergroup → t.me deep link opens as Mini App inside Telegram
   return {
     inline_keyboard: [[
-      { text: '🏰 Abrir Dashboard', url },
+      { text: '🏰 Abrir Dashboard', url: telegramAppLink },
     ]],
   };
 }
@@ -98,6 +99,7 @@ export async function GET(req: NextRequest) {
       env: {
         BOT_TOKEN: process.env.BOT_TOKEN ? `set (${process.env.BOT_TOKEN.slice(0, 6)}...)` : 'MISSING',
         MINI_APP_URL: process.env.MINI_APP_URL ?? 'MISSING',
+        TELEGRAM_APP_LINK: process.env.TELEGRAM_APP_LINK ?? 'MISSING',
         WEBHOOK_SECRET: process.env.WEBHOOK_SECRET ? 'set' : 'MISSING',
       },
     });
