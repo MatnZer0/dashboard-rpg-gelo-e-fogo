@@ -57,6 +57,7 @@ export default function Dashboard({ data }: { data: DomainRecord[] }) {
   });
 
   const [selectedTurno, setSelectedTurno] = useState<number | null>(null);
+  const [activeTab, setActiveTab] = useState<'informacoes' | 'recursos'>('recursos');
 
   // Persist the selected domínio whenever it changes
   useEffect(() => {
@@ -118,6 +119,22 @@ export default function Dashboard({ data }: { data: DomainRecord[] }) {
           </div>
         </div>
 
+        {/* ── Tab Navigation ── */}
+        <div className="tab-nav">
+          <button
+            className={`tab-button ${activeTab === 'recursos' ? 'active' : ''}`}
+            onClick={() => setActiveTab('recursos')}
+          >
+            Recursos
+          </button>
+          <button
+            className={`tab-button ${activeTab === 'informacoes' ? 'active' : ''}`}
+            onClick={() => setActiveTab('informacoes')}
+          >
+            Informações
+          </button>
+        </div>
+
         {/* ── Turno Status Badge ── */}
         {/* {record && (
           <div className="turno-status">
@@ -134,6 +151,8 @@ export default function Dashboard({ data }: { data: DomainRecord[] }) {
             <div className="empty">✦ Selecione um domínio ✦</div>
           ) : (
             <>
+              {activeTab === 'recursos' && (
+              <>
               {/* ── Pontos ── */}
               {record.Agricultura_Pontos !== null && (
                 <div className="section">
@@ -217,6 +236,12 @@ export default function Dashboard({ data }: { data: DomainRecord[] }) {
                 </div>
               )}
 
+              </>
+              )}
+
+              {activeTab === 'informacoes' && (
+              <>
+
               {/* ── Domain Info ── */}
               {record.Area_mi2 && (
                 <div className="section">
@@ -264,6 +289,8 @@ export default function Dashboard({ data }: { data: DomainRecord[] }) {
               )}
 
               <div className="ornament">✦ ✦ ✦</div>
+              </>
+              )}
             </>
           )}
         </div>
