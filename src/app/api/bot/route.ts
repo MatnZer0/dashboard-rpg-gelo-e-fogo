@@ -21,23 +21,27 @@ function escapeMarkdown(text: string): string {
   return text.replace(/[_*[\]()~`>#+\-=|{}.!\\]/g, '\\$&');
 }
 
-// web_app buttons only work in private chats.
-// In groups, a t.me/botname/appname link opens the Mini App directly inside Telegram.
-function buildButton(chatType: string) {
+// In private chats: web_app button opens instantly with no warning.
+// In groups: send the t.me link as plain text — Telegram auto-renders it as
+// a rich "LAUNCH" preview card, no warning popup on repeat opens.
+function buildReply(chatType: string): { text: string; replyMarkup?: object } {
+  const telegramAppLink = process.env.TELEGRAM_APP_LINK!;
   const miniAppUrl = process.env.MINI_APP_URL!;
-  const telegramAppLink = process.env.TELEGRAM_APP_LINK!; // e.g. https://t.me/geloefogobot/dashboard
+
   if (chatType === 'private') {
     return {
-      inline_keyboard: [[
-        { text: '🏰 Abrir Dashboard', web_app: { url: miniAppUrl } },
-      ]],
+      text: '⚔️ *Dashboard RPG G\\&F*',
+      replyMarkup: {
+        inline_keyboard: [[
+          { text: '🏰 Abrir Dashboard', web_app: { url: miniAppUrl } },
+        ]],
+      },
     };
   }
-  // group / supergroup → t.me deep link opens as Mini App inside Telegram
+
+  // Group: just the link as text — Telegram renders the Launch card automatically
   return {
-    inline_keyboard: [[
-      { text: '🏰 Abrir Dashboard', url: telegramAppLink },
-    ]],
+    text: escapeMarkdown(telegramAppLink),
   };
 }
 
@@ -51,25 +55,20 @@ export async function POST(req: NextRequest) {
     if (!message) return NextResponse.json({ ok: true });
 
     const chatId: number = message.chat.id;
-    const chatType: string = message.chat.type; // 'private' | 'group' | 'supergroup'
+    const chatType: string = message.chat.type;
     const text: string = message.text ?? '';
     console.log(`[bot] chat=${chatId} type=${chatType} text="${text}"`);
 
     if (text.startsWith('/dashboard')) {
-      const result = await sendMessage(
-        chatId,
-        '⚔️ *Dashboard RPG G\\&F*\nClique no botão abaixo para abrir o painel de domínios\\.',
-        buildButton(chatType)
-      );
+      const { text: msgText, replyMarkup } = buildReply(chatType);
+      const result = await sendMessage(chatId, msgText, replyMarkup);
       console.log('[bot] sendMessage result:', JSON.stringify(result));
 
     } else if (text.startsWith('/start')) {
       const name = escapeMarkdown(message.from?.first_name ?? 'aventureiro');
-      const result = await sendMessage(
-        chatId,
-        `Olá, *${name}*\\! 👋\n\nSou o bot do *RPG G\\&F*\\. Use /dashboard para abrir o painel de domínios\\.`,
-        buildButton(chatType)
-      );
+      const { text: msgText, replyMarkup } = buildReply(chatType);
+      const greeting = `Olá, *${name}*\\! 👋\n\nSou o bot do *RPG G\\&F*\\. Use /dashboard para abrir o painel de domínios\\.\n\n${msgText}`;
+      const result = await sendMessage(chatId, greeting, replyMarkup);
       console.log('[bot] sendMessage result:', JSON.stringify(result));
     }
 
