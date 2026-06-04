@@ -1,8 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-const BOT_TOKEN = process.env.BOT_TOKEN;
-const MINI_APP_URL = process.env.MINI_APP_URL;
-
 // ── Telegram Bot API helper ───────────────────────────────────────────────────
 async function sendMessage(chatId: number, text: string, replyMarkup?: object) {
   const body: Record<string, unknown> = {
@@ -12,13 +9,11 @@ async function sendMessage(chatId: number, text: string, replyMarkup?: object) {
   };
   if (replyMarkup) body.reply_markup = replyMarkup;
 
-  const res = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+  const res = await fetch(`https://api.telegram.org/bot${process.env.BOT_TOKEN}/sendMessage`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
   });
-
-  // Return the response so callers can log errors
   return res.json();
 }
 
@@ -26,11 +21,24 @@ function escapeMarkdown(text: string): string {
   return text.replace(/[_*[\]()~`>#+\-=|{}.!\\]/g, '\\$&');
 }
 
-const dashboardButton = () => ({
-  inline_keyboard: [[
-    { text: '🏰 Abrir Dashboard', web_app: { url: MINI_APP_URL } },
-  ]],
-});
+// web_app buttons only work in private chats.
+// In groups, use a regular URL button that opens the Mini App in the browser.
+function buildButton(chatType: string) {
+  const url = process.env.MINI_APP_URL!;
+  if (chatType === 'private') {
+    return {
+      inline_keyboard: [[
+        { text: '🏰 Abrir Dashboard', web_app: { url } },
+      ]],
+    };
+  }
+  // group / supergroup / channel → plain URL button
+  return {
+    inline_keyboard: [[
+      { text: '🏰 Abrir Dashboard', url },
+    ]],
+  };
+}
 
 // ── Webhook POST ──────────────────────────────────────────────────────────────
 export async function POST(req: NextRequest) {
@@ -39,20 +47,18 @@ export async function POST(req: NextRequest) {
     console.log('[bot] update:', JSON.stringify(update));
 
     const message = update?.message;
-    if (!message) {
-      console.log('[bot] no message in update, skipping');
-      return NextResponse.json({ ok: true });
-    }
+    if (!message) return NextResponse.json({ ok: true });
 
     const chatId: number = message.chat.id;
+    const chatType: string = message.chat.type; // 'private' | 'group' | 'supergroup'
     const text: string = message.text ?? '';
-    console.log(`[bot] chat=${chatId} text="${text}"`);
+    console.log(`[bot] chat=${chatId} type=${chatType} text="${text}"`);
 
     if (text.startsWith('/dashboard')) {
       const result = await sendMessage(
         chatId,
         '⚔️ *Dashboard RPG G\\&F*\nClique no botão abaixo para abrir o painel de domínios\\.',
-        dashboardButton()
+        buildButton(chatType)
       );
       console.log('[bot] sendMessage result:', JSON.stringify(result));
 
@@ -61,7 +67,7 @@ export async function POST(req: NextRequest) {
       const result = await sendMessage(
         chatId,
         `Olá, *${name}*\\! 👋\n\nSou o bot do *RPG G\\&F*\\. Use /dashboard para abrir o painel de domínios\\.`,
-        dashboardButton()
+        buildButton(chatType)
       );
       console.log('[bot] sendMessage result:', JSON.stringify(result));
     }
@@ -73,7 +79,7 @@ export async function POST(req: NextRequest) {
   }
 }
 
-// ── GET: register webhook ─────────────────────────────────────────────────────
+// ── GET: webhook management ───────────────────────────────────────────────────
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const action = searchParams.get('action') ?? 'set';
@@ -83,35 +89,27 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  // ?action=info  → check current webhook status + env vars
   if (action === 'info') {
     const webhookInfo = await fetch(
-      `https://api.telegram.org/bot${BOT_TOKEN}/getWebhookInfo`
+      `https://api.telegram.org/bot${process.env.BOT_TOKEN}/getWebhookInfo`
     ).then(r => r.json());
-
     return NextResponse.json({
       webhook: webhookInfo,
       env: {
-        BOT_TOKEN: BOT_TOKEN ? `set (${BOT_TOKEN.slice(0, 6)}...)` : 'MISSING',
-        MINI_APP_URL: MINI_APP_URL ?? 'MISSING',
+        BOT_TOKEN: process.env.BOT_TOKEN ? `set (${process.env.BOT_TOKEN.slice(0, 6)}...)` : 'MISSING',
+        MINI_APP_URL: process.env.MINI_APP_URL ?? 'MISSING',
         WEBHOOK_SECRET: process.env.WEBHOOK_SECRET ? 'set' : 'MISSING',
       },
     });
   }
 
-  // ?action=set (default) → register the webhook
-  const webhookUrl = `${MINI_APP_URL}/api/bot`;
-  const res = await fetch(
-    `https://api.telegram.org/bot${BOT_TOKEN}/setWebhook`,
-    {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        url: webhookUrl,
-        allowed_updates: ['message'],
-      }),
-    }
-  );
+  // action=set (default)
+  const webhookUrl = `${process.env.MINI_APP_URL}/api/bot`;
+  const res = await fetch(`https://api.telegram.org/bot${process.env.BOT_TOKEN}/setWebhook`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ url: webhookUrl, allowed_updates: ['message'] }),
+  });
   const data = await res.json();
   return NextResponse.json({ webhookUrl, ...data });
 }
