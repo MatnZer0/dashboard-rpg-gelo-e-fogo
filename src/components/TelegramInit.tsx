@@ -4,6 +4,13 @@ import { useEffect } from 'react';
 
 export default function TelegramInit() {
   useEffect(() => {
+    // Telegram Desktop WebView captures wheel events before they reach the page,
+    // breaking normal mouse scroll. Forward them manually.
+    const handleWheel = (e: WheelEvent) => {
+      window.scrollBy({ top: e.deltaY, behavior: 'instant' });
+    };
+    window.addEventListener('wheel', handleWheel, { passive: true });
+
     // Dynamically import to avoid SSR issues
     import('@telegram-apps/sdk-react').then(({ init, miniApp, backButton }) => {
       try {
@@ -16,27 +23,14 @@ export default function TelegramInit() {
           backButton.hide();
         }
       } catch (err) {
+        // Running outside Telegram — graceful degradation
         console.info('Telegram SDK: running outside Telegram environment', err);
       }
     }).catch(() => {
       console.info('Telegram SDK not available');
     });
 
-    // Telegram Desktop WebView identifies itself with this user agent string.
-    // Only apply the wheel fix inside Telegram — not on Vercel or mobile.
-    const isTelegramDesktop = navigator.userAgent.includes('TelegramDesktop');
-    if (!isTelegramDesktop) return;
-
-    // Telegram Desktop intercepts wheel events at the app level before they
-    // reach the WebView's scroll container. We stop propagation and manually
-    // scroll instead, which bypasses Telegram's interception.
-    const handleWheel = (e: WheelEvent) => {
-      e.stopPropagation();
-      window.scrollBy({ top: e.deltaY, left: e.deltaX, behavior: 'instant' });
-    };
-    window.addEventListener('wheel', handleWheel, { capture: true });
-
-    return () => window.removeEventListener('wheel', handleWheel, { capture: true });
+    return () => window.removeEventListener('wheel', handleWheel);
   }, []);
 
   return null;
