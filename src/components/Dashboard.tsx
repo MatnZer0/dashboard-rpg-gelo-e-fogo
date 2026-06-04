@@ -141,7 +141,7 @@ export default function Dashboard({ data }: { data: DomainRecord[] }) {
                   <div className="section-body">
                     <div className="pontos-grid">
                       {[
-                        { label: 'Agri-\ncultura', value: record.Agricultura_Pontos },
+                        { label: 'Agricultura', value: record.Agricultura_Pontos },
                         { label: 'Recursos\nNaturais', value: record.Recursos_Naturais_Pontos },
                         { label: 'Força de\nTrabalho', value: record.Forca_Trabalho_Pontos },
                         { label: 'Bens\nde Luxo', value: record.Bens_Luxo_Pontos },
