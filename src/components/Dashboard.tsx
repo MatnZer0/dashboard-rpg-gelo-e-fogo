@@ -66,9 +66,11 @@ export default function Dashboard({ data }: { data: DomainRecord[] }) {
 
   // When domínio changes, auto-select most recent completed turno
   useEffect(() => {
-    const recent = getMostRecentCompletedTurno(data, selectedNome);
-    setSelectedTurno(recent);
-  }, [data, selectedNome]);
+    if (selectedTurno === null) {
+      const recent = getMostRecentCompletedTurno(data, selectedNome);
+      setSelectedTurno(recent);
+    }
+  }, [data, selectedNome, selectedTurno]);
 
   const availableTurnos = useMemo(() => getCompletedTurnos(data, selectedNome), [data, selectedNome]);
   const record = useMemo(() => selectedTurno !== null ? getRecord(data, selectedNome, selectedTurno) : null, [data, selectedNome, selectedTurno]);
