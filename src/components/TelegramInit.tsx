@@ -4,6 +4,13 @@ import { useEffect } from 'react';
 
 export default function TelegramInit() {
   useEffect(() => {
+    // Telegram Desktop WebView captures wheel events before they reach the page,
+    // breaking normal mouse scroll. Forward them manually.
+    const handleWheel = (e: WheelEvent) => {
+      window.scrollBy({ top: e.deltaY, behavior: 'instant' });
+    };
+    window.addEventListener('wheel', handleWheel, { passive: true });
+
     // Dynamically import to avoid SSR issues
     import('@telegram-apps/sdk-react').then(({ init, miniApp, backButton }) => {
       try {
@@ -22,6 +29,8 @@ export default function TelegramInit() {
     }).catch(() => {
       console.info('Telegram SDK not available');
     });
+
+    return () => window.removeEventListener('wheel', handleWheel);
   }, []);
 
   return null;
