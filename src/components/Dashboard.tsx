@@ -341,7 +341,7 @@ export default function Dashboard({ data }: { data: DomainRecord[] }) {
         <div className="control-group">
           <label className="control-label">Domínio</label>
           <div className="select-wrapper">
-            <select value={selectedNome} onChange={e => { setSelectedNome(e.target.value); setSelectedTurno(null); }}>
+            <select value={selectedNome} onChange={e => { setSelectedNome(e.target.value); }}>
               {nomes.map(n => <option key={n} value={n}>{n}</option>)}
             </select>
           </div>
