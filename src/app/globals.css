@@ -304,8 +304,9 @@ select option {
 .ponto-label {
   font-family: 'Cinzel', serif;
   font-size: 7px;
+  font-weight: 700;
   letter-spacing: 0.1em;
-  color: var(--gold-dark);
+  color: var(--parchment);
   text-transform: uppercase;
   display: block;
   margin-bottom: 3px;
